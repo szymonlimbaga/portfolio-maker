@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Portfolio preview | Portfolio Maker</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/templates.css">
+</head>
+
+<body>
+  <header class="bar"><a class="brand" href="index.html">Portfolio Maker</a>
+    <nav id="nav"></nav>
+  </header>
+  <main class="wrap wide">
+    <div class="tabs" id="tabs"></div>
+    <div class="acts"><a class="btn ghost sm" id="ed">Edit information</a><a class="btn ghost sm"
+        href="manage.html">Manage portfolios</a></div>
+    <p id="msg" role="status"></p>
+    <div id="out"></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/render.js"></script>
+  <script>
+    const id = qs.get('id'); let P;
+    function show() {
+      $('#out').innerHTML = render(P, P.selected_template);
+      $('#tabs').innerHTML = [1, 2, 3].map(n => `<button data-t="${n}" class="${n === P.selected_template ? 'on' : ''}">${TNAMES[n]}</button>`).join('');
+    }
+    (async () => {
+      if (!await requireAuth()) return;
+      if (!id) { location.href = 'manage.html'; return; }
+      $('#ed').href = 'form.html?id=' + id;
+      P = await getPortfolio(id); show();
+      $('#tabs').onclick = async e => {
+        const t = +e.target.dataset.t; if (!t) return;
+        const { error } = await sb.from('portfolios').update({ selected_template: t }).eq('id', id);
+        if (error) { $('#msg').className = 'err'; $('#msg').textContent = error.message; return; }
+        P.selected_template = t; show();
+      };
+    })().catch(e => { $('#msg').className = 'err'; $('#msg').textContent = 'Could not load portfolio: ' + e.message; });
+  </script>
+</body>
+
+</html>

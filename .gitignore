@@ -1,0 +1,14 @@
+config.local.php
+.env
+*.log
+.DS_Store
+
+# Private configuration and secrets
+config.local.php
+.env
+.env.*
+!.env.example
+
+# Dependencies and local files
+/vendor/
+/node_modules/

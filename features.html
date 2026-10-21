@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Features | Portfolio Maker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+</head>
+
+<body>
+    <header class="bar"><a class="brand" href="index.html">Portfolio Maker</a>
+        <nav id="nav"></nav>
+    </header>
+    <main class="wrap wide">
+        <h1>Features</h1>
+        <p class="lead">Everything you need to build a portfolio you can share, without writing any code.</p>
+        <div class="cards" style="margin-top:1.8rem">
+            <div class="card">
+                <h2>Online database</h2>
+                <p>Your information is stored in a cloud database, so it is still there after you refresh or come back
+                    later.</p>
+            </div>
+            <div class="card">
+                <h2>Secure login</h2>
+                <p>Sign up and log in. You can only see and change your own portfolios.</p>
+            </div>
+            <div class="card">
+                <h2>One simple form</h2>
+                <p>Personal details, education, skills, projects, work experience and social links, with checks that
+                    catch typing mistakes.</p>
+            </div>
+            <div class="card">
+                <h2>Profile picture</h2>
+                <p>Upload a photo. If you skip it, your initials are shown instead.</p>
+            </div>
+            <div class="card">
+                <h2>Three templates</h2>
+                <p>Simple, Modern and Creative. Each one arranges the same information in a very different way.</p>
+            </div>
+            <div class="card">
+                <h2>Phone preview</h2>
+                <p>See how each template looks on a phone before you save your choice.</p>
+            </div>
+            <div class="card">
+                <h2>Edit any time</h2>
+                <p>Update your details or switch templates whenever you like.</p>
+            </div>
+            <div class="card">
+                <h2>Delete when done</h2>
+                <p>Remove a portfolio and all of its information from the database with one click.</p>
+            </div>
+        </div>
+        <p style="margin-top:2rem"><a class="btn" href="form.html">Create Portfolio</a> <a class="btn ghost"
+                href="templates.html">Browse templates</a></p>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/site.js"></script>
+    <script>session().then(nav)</script>
+</body>
+
+</html>

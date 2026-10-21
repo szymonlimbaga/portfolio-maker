@@ -1,0 +1,7 @@
+<?php
+// Copy this file to config.local.php and fill in your own values.
+// config.local.php is ignored by Git, so your keys are never uploaded.
+return [
+    'SUPABASE_URL'      => 'https://YOUR-PROJECT.supabase.co',
+    'SUPABASE_ANON_KEY' => 'YOUR-PUBLISHABLE-OR-ANON-KEY', // never the service_role key
+];

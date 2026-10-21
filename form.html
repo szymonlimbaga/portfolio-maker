@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Portfolio information | Portfolio Maker</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    .bad {
+      border-color: #b42318 !important;
+      background: #fff5f4 !important
+    }
+
+    #msg.err {
+      background: #fff5f4;
+      border: 1px solid #b42318;
+      border-radius: 8px;
+      padding: .8rem 1rem
+    }
+
+    #msg ul {
+      margin: .4rem 0 0;
+      padding-left: 1.2rem
+    }
+  </style>
+</head>
+
+<body>
+  <header class="bar"><a class="brand" href="index.html">Portfolio Maker</a>
+    <nav id="nav"></nav>
+  </header>
+  <main class="wrap">
+    <h1 id="ttl">Create your portfolio</h1>
+    <form id="f">
+      <fieldset>
+        <legend>Personal information</legend>
+        <label>Full name<input name="full_name" required></label>
+        <label>Profile picture<input type="file" id="pic" accept="image/*"></label><img id="prev" class="thumb" alt=""
+          hidden>
+        <label>Email<input type="email" name="email"></label>
+        <label>Contact number<input name="contact_number" type="tel"></label>
+        <label>Address<input name="address"></label>
+        <label>About me<textarea name="about_me" rows="4"></textarea></label>
+      </fieldset>
+      <div id="groups"></div>
+      <p id="msg" role="status"></p>
+      <button class="btn" id="go">Save and choose a template</button>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/site.js"></script>
+  <script>
+    const TITLES = { education: 'Education', skills: 'Skills', projects: 'Projects', experience: 'Work experience', social_links: 'Social media and website links' };
+    const LBL = { school: 'School', degree: 'Degree or program', year_start: 'Start year', year_end: 'End year', skill_name: 'Skill', title: 'Project title', description: 'Description', link: 'Link', company: 'Company', position: 'Position', start_date: 'Start date', end_date: 'End date', platform: 'Platform (e.g. LinkedIn)', url: 'URL' };
+    let user, id = qs.get('id'), picUrl = null;
+    function addRow(g, v = {}) {
+      const d = document.createElement('div'); d.className = 'row';
+      d.innerHTML = G[g].map(k => `<${k === 'description' ? 'textarea rows="2"' : 'input'} data-k="${k}" placeholder="${LBL[k]}" aria-label="${LBL[k]}">${k === 'description' ? '</textarea>' : ''}`).join('') + '<button type="button" class="btn danger sm">Remove</button>';
+      d.querySelectorAll('[data-k]').forEach(i => i.value = v[i.dataset.k] ?? '');
+      d.querySelector('button').onclick = () => d.remove();
+      $(`#rows-${g}`).append(d);
+    }
+    (async () => {
+      user = await requireAuth(); if (!user) return;
+      for (const g in G) {
+        const f = document.createElement('fieldset');
+        f.innerHTML = `<legend>${TITLES[g]}</legend><div id="rows-${g}"></div><button type="button" class="btn ghost sm">Add ${TITLES[g].toLowerCase()}</button>`;
+        f.querySelector('button').onclick = () => addRow(g);
+        $('#groups').append(f);
+      }
+      if (id) {
+        $('#ttl').textContent = 'Edit your portfolio';
+        const p = await getPortfolio(id);
+        for (const k of ['full_name', 'email', 'contact_number', 'address', 'about_me']) $(`[name=${k}]`).value = p[k] ?? '';
+        picUrl = p.profile_picture_url;
+        if (picUrl) { $('#prev').src = picUrl; $('#prev').hidden = false; }
+        for (const g in G) p[g].forEach(r => addRow(g, r));
+      }
+      for (const g in G) if (!$(`#rows-${g}`).children.length) addRow(g);
+    })().catch(e => { $('#msg').className = 'err'; $('#msg').textContent = e.message; });
+
+    $('#pic').onchange = e => { const f = e.target.files[0]; if (f) { $('#prev').src = URL.createObjectURL(f); $('#prev').hidden = false; } };
+
+    const HASL = v => /\p{L}/u.test(v), L = n => [HASL, n + ': must contain letters, not only numbers.'];
+    const validUrl = v => { try { return new URL(/^https?:\/\//i.test(v) ? v : 'https://' + v).hostname.includes('.'); } catch { return false; } };
+    const RULES = {
+      full_name: [v => /^\p{L}[\p{L}\s.'’\-]*$/u.test(v), 'Full name: type your real name using letters only, not numbers or symbols.'],
+      contact_number: [v => /^\+?[\d\s\-()]{7,20}$/.test(v), 'Contact number: use numbers only (you may use +, spaces, - or brackets), at least 7 digits.'],
+      year_start: [v => /^\d{4}$/.test(v), 'Start year: type a 4-digit year, like 2022.'],
+      year_end: [v => /^(\d{4}|present)$/i.test(v), 'End year: type a 4-digit year, like 2026 (or Present).'],
+      school: L('School'), degree: L('Degree or program'), skill_name: L('Skill'), title: L('Project title'),
+      company: L('Company'), position: L('Position'), platform: L('Platform'),
+      link: [validUrl, 'Project link: type a real website address, like github.com/yourname.'],
+      url: [validUrl, 'Social media link: type a real website address, like facebook.com/yourname.']
+    };
+    function validate() {
+      document.querySelectorAll('.bad').forEach(x => x.classList.remove('bad'));
+      const errs = [];
+      document.querySelectorAll('#f [name], #f [data-k]').forEach(i => {
+        const r = RULES[i.name || i.dataset.k], v = i.value.trim();
+        if (r && v && !r[0](v)) { i.classList.add('bad'); if (!errs.includes(r[1])) errs.push(r[1]); }
+      });
+      return errs;
+    }
+    $('#f').onsubmit = async e => {
+      e.preventDefault(); const m = $('#msg'), b = $('#go');
+      const errs = validate();
+      if (errs.length) { m.className = 'err'; m.innerHTML = '<b>Please fix these before saving:</b><ul>' + errs.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>'; m.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      m.className = ''; m.textContent = 'Saving...'; b.disabled = true;
+      try {
+        const f = $('#pic').files[0];
+        if (f) {
+          const path = `${user.user.id}/${Date.now()}-${f.name.replace(/[^\w.\-]/g, '_')}`;
+          const { error } = await sb.storage.from('avatars').upload(path, f); if (error) throw error;
+          picUrl = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+        }
+        const base = { profile_picture_url: picUrl };
+        for (const k of ['full_name', 'email', 'contact_number', 'address', 'about_me']) base[k] = $(`[name=${k}]`).value.trim();
+        const kids = {};
+        for (const g in G) kids[g] = [...$(`#rows-${g}`).children].map(r => {
+          const o = {}; r.querySelectorAll('[data-k]').forEach(i => o[i.dataset.k] = i.value.trim()); return o;
+        }).filter(o => Object.values(o).some(Boolean));
+        const pid = await savePortfolio(base, kids, id);
+        location.href = 'templates.html?id=' + pid;
+      } catch (err) { m.className = 'err'; m.textContent = 'Could not save: ' + err.message; b.disabled = false; }
+    };
+  </script>
+</body>
+
+</html>

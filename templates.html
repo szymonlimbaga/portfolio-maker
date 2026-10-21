@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Templates | Portfolio Maker</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+</head>
+
+<body>
+  <header class="bar"><a class="brand" href="index.html">Portfolio Maker</a>
+    <nav id="nav"></nav>
+  </header>
+  <main class="wrap wide">
+    <h1 id="ttl">Templates</h1>
+    <p class="lead" id="lead"></p>
+    <div class="pick">
+      <div>
+        <div class="tpicks" id="tp"></div>
+        <div class="pcard">
+          <h2 id="tn"></h2>
+          <p id="td"></p>
+        </div>
+        <p id="msg" role="status"></p>
+        <div class="acts" id="ac"></div>
+      </div>
+      <div class="phone"><iframe id="fr" title="Phone preview of the template"></iframe></div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/render.js"></script>
+  <script>
+    const id = qs.get('id');
+    const INFO = [null, 'A clean paper-style résumé: one column, serif type, section titles on the left.', 'A gradient banner with rounded cards, chips and a project grid.', 'A bold sticker panel with a notebook-style timeline and thick outlines.'];
+    const SAMPLE = {
+      full_name: 'Alex Rivera', profile_picture_url: null, email: 'alex@example.com', contact_number: '+63 912 345 6789', address: 'Cebu City, Philippines',
+      about_me: 'Aspiring web developer who loves building clean, useful websites.',
+      education: [{ school: 'Cebu Institute of Technology', degree: 'BS Information Technology', year_start: '2022', year_end: '2026' }],
+      skills: ['HTML', 'CSS', 'JavaScript', 'Supabase'].map(skill_name => ({ skill_name })),
+      projects: [{ title: 'Task Tracker', description: 'A to-do web app with online storage.', link: 'github.com/alex' }],
+      experience: [{ company: 'Freelance', position: 'Web Designer', start_date: '2024', end_date: 'Present', description: 'Built simple websites for local shops.' }],
+      social_links: [{ platform: 'GitHub', url: 'github.com/alex' }]
+    };
+    let P, cur = 1;
+    const frame = t => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="css/base.css"><link rel="stylesheet" href="css/templates.css"><style>body{margin:0;padding-top:28px;background:#0d1322}.t1,.t2,.t3{margin:0!important;max-width:none!important;border-radius:0!important;box-shadow:none!important}</style></head><body>${render(P, t)}</body></html>`;
+    function show() {
+      $('#fr').srcdoc = frame(cur);
+      document.querySelectorAll('.tp').forEach(b => b.classList.toggle('on', +b.dataset.t === cur));
+      $('#tn').textContent = TNAMES[cur] + ' template'; $('#td').textContent = INFO[cur];
+    }
+    (async () => {
+      const s = await session(); nav(s);
+      if (id) {
+        if (!s) { location.href = 'login.html?next=' + encodeURIComponent('templates.html?id=' + id); return; }
+        P = await getPortfolio(id); cur = P.selected_template;
+        $('#ttl').textContent = 'Choose your template';
+        $('#lead').textContent = 'Your information is saved. Check each design in phone view, then select Save template.';
+        $('#ac').innerHTML = '<button class="btn" id="sv">Save template</button><a class="btn ghost" href="manage.html">Cancel</a><a class="btn ghost" href="form.html?id=' + id + '">Edit information</a>';
+        $('#sv').onclick = async () => {
+          $('#sv').disabled = true;
+          const { error } = await sb.from('portfolios').update({ selected_template: cur }).eq('id', id);
+          if (error) { $('#msg').className = 'err'; $('#msg').textContent = error.message; $('#sv').disabled = false; return; }
+          location.href = 'preview.html?id=' + id;
+        };
+      } else {
+        P = SAMPLE;
+        $('#lead').textContent = 'Preview each design in phone view with sample information.';
+        $('#ac').innerHTML = '<a class="btn" href="form.html">Create your portfolio</a>';
+      }
+      $('#tp').innerHTML = [1, 2, 3].map(n => `<button type="button" class="tp" data-t="${n}"><div class="mini m${n}"></div>${TNAMES[n]}</button>`).join('');
+      $('#tp').onclick = e => { const b = e.target.closest('.tp'); if (b) { cur = +b.dataset.t; show(); } };
+      show();
+    })().catch(e => { $('#msg').className = 'err'; $('#msg').textContent = 'Could not load: ' + e.message; });
+  </script>
+</body>
+
+</html>

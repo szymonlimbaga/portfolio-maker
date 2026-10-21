@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Portfolio Maker</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+</head>
+
+<body>
+    <header class="bar"><a class="brand" href="index.html">Portfolio Maker</a>
+        <nav id="nav"></nav>
+    </header>
+    <main class="wrap home">
+        <h1>Turn your details into a portfolio website</h1>
+        <p class="lead">Enter your information once, pick one of three designs (Simple, Modern or Creative), and get a
+            portfolio you can edit any time.</p>
+        <p><a class="btn" href="form.html">Create Portfolio</a> <a class="btn ghost" href="templates.html">Browse
+                templates</a> <a class="btn ghost" href="features.html">Features</a></p>
+        <div class="demo">
+            <figure>
+                <div class="mini m1"></div>
+                <figcaption>Simple</figcaption>
+            </figure>
+            <figure>
+                <div class="mini m2"></div>
+                <figcaption>Modern</figcaption>
+            </figure>
+            <figure>
+                <div class="mini m3"></div>
+                <figcaption>Creative</figcaption>
+            </figure>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/site.js"></script>
+    <script>session().then(nav)</script>
+</body>
+
+</html>
